@@ -1,0 +1,79 @@
+# FA4 Windows Status
+
+This note captures the current state of the FlashAttention 4 attempt on the same RTX 5090 Windows machine.
+
+## Goal
+
+Verify this import and runtime path:
+
+```python
+import torch
+from flash_attn.cute import flash_attn_func
+```
+
+## Dedicated Test Env
+
+- env: `.venv_fa4`
+- python: `3.13.9`
+- torch: `2.12.0.dev20260414+cu130`
+- gpu: `NVIDIA GeForce RTX 5090`
+
+## What Worked
+
+These installed in the isolated FA4 env:
+
+- `numpy==2.4.4`
+- `einops==0.8.2`
+- `apache-tvm-ffi==0.1.10`
+- `torch-c-dlpack-ext==0.1.5`
+- `quack-kernels==0.3.10 --no-deps`
+- `nvidia-cutlass-dsl==4.4.2 --no-deps`
+- editable install of `flash-attn-4` from `third_party/flash-attention-for-windows/flash_attn/cute`
+
+## What Failed
+
+The first real FA4 import still failed:
+
+```python
+from flash_attn.cute import flash_attn_func
+```
+
+Observed error:
+
+```text
+ModuleNotFoundError: No module named 'cutlass'
+```
+
+## Why It Failed
+
+`nvidia-cutlass-dsl==4.4.2` did install, but only as metadata.
+
+`pip show -f nvidia-cutlass-dsl` reported only:
+
+- `nvidia_cutlass_dsl-4.4.2.dist-info/...`
+
+It did **not** install an actual `cutlass` package tree, which is what `flash_attn.cute` imports immediately.
+
+The package metadata also still declares:
+
+- `Requires: nvidia-cutlass-dsl-libs-base`
+
+That dependency is the unresolved Windows-side blocker in this environment.
+
+## Practical Meaning
+
+At the moment this repo contains:
+
+- a verified FA2 Windows path
+- a partially assembled FA4 test env
+- a precise FA4 import blocker
+
+It does **not** yet contain a verified native Windows FA4 runtime path.
+
+## Best Next Step
+
+The next promising route is one of:
+
+1. Find a real Windows build of `nvidia-cutlass-dsl-libs-base` that exposes the `cutlass` Python package.
+2. Build the missing CUTLASS DSL layer from source in a way that produces `cutlass.cute` for this Windows stack.
+3. Re-test FA4 when upstream or community Windows packaging for the CUTLASS DSL layer matures.

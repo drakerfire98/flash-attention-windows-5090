@@ -31,6 +31,20 @@ This repo preserves the exact working path that compiled and ran a CUDA smoke te
 - It does not claim FlashAttention 4 is working on this exact stack yet.
 - It does not bundle the upstream FlashAttention source tree.
 
+## FA4 Status
+
+FlashAttention 4 was tested in a dedicated `.venv_fa4` environment on the same machine.
+
+Current status:
+
+- `flash-attn-4` can be installed as an editable package from the local `flash_attn/cute` tree
+- the import path `from flash_attn.cute import flash_attn_func` still fails on Windows here
+- exact failure: `ModuleNotFoundError: No module named 'cutlass'`
+
+The root cause is that `nvidia-cutlass-dsl==4.4.2` installs only metadata in this environment and still requires `nvidia-cutlass-dsl-libs-base`, which does not currently resolve to a usable Windows package here.
+
+See `docs/FA4_WINDOWS_STATUS.md` for the exact attempted install path and blocker.
+
 ## Quick Start
 
 1. Clone this repo.
