@@ -1,0 +1,23 @@
+--- a/setup.py
++++ b/setup.py
+@@
+-# ninja build does not work unless include_dirs are abs path
+-this_dir = os.path.dirname(os.path.abspath(__file__))
++# ninja build does not work unless include_dirs are abs path
++this_dir = os.path.dirname(os.path.abspath(__file__))
++
++BUILD_TARGET = os.environ.get("BUILD_TARGET", "auto").strip().lower()
++IS_ROCM = False
++
++if BUILD_TARGET == "auto":
++    if IS_HIP_EXTENSION:
++        IS_ROCM = True
++    else:
++        IS_ROCM = False
++else:
++    if BUILD_TARGET == "cuda":
++        IS_ROCM = False
++    elif BUILD_TARGET == "rocm":
++        IS_ROCM = True
++    else:
++        raise ValueError(f"Unsupported BUILD_TARGET: {BUILD_TARGET}")

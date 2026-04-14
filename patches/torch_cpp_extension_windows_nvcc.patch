@@ -1,0 +1,8 @@
+--- a/torch/utils/cpp_extension.py
++++ b/torch/utils/cpp_extension.py
+@@
+-            nvcc = shlex.join(_wrap_compiler(nvcc))
++            if IS_WINDOWS:
++                nvcc = " ".join(_nt_quote_args(_wrap_compiler(nvcc)))
++            else:
++                nvcc = shlex.join(_wrap_compiler(nvcc))
